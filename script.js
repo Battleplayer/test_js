@@ -2,6 +2,7 @@ window.onload = login;
 
 // LOGIN
 var tries = 1;
+var table;
 
 function login() {
   var h1 = document.createElement('h1');
@@ -13,19 +14,21 @@ function login() {
 
     popup.style.display = 'block';
     popup_close.onclick = function () {
-      popup.style.display = 'none';
-      loader();
-      document.body.appendChild(buildTable(4, 9, randomNum));
-      count();
+      work();
     };
     window.onclick = function (event) {
       if (event.target == popup) {
-        popup.style.display = 'none';
-        loader();
-        document.body.appendChild(buildTable(4, 9, randomNum));
-        // tableSwap();
-        count();
+        work();
       }
+    };
+
+    function work() {
+      popup.style.display = 'none';
+      loader();
+      document.body.appendChild(buildTable(4, 9, randomNum));
+      table = document.getElementById('table');
+      count();
+      removeValue();
     }
   }
   else {
@@ -58,113 +61,102 @@ function buildTable(x, y, func1) {
   table.setAttribute('id', 'table');
   var table1 = [];
   for (var i = 1; i <= y; i++) {
-    var table2 = [];
-    for (var j = 1; j <= x; j++) {
-      table2.push(func1());
-    }
-    table1.push(table2);
+    table1.push([]);
+    for (var j = 1; j <= x; j++) table1[i - 1].push(func1());
   }
   // console.log(table1);
-  table1.forEach(function (item) {
-    var row = document.createElement('tr');
-    item.forEach(function (item2) {
-      var cell = document.createElement('td');
-      cell.textContent = item2;
-      row.appendChild(cell);
+  // table1.forEach(function (item) {
+  //   var row = document.createElement('tr');
+  //   item.forEach(function (item2) {
+  //     var cell = document.createElement('td');
+  //     cell.textContent = item2;
+  //     row.appendChild(cell);
+  //   });
+  //   table.appendChild(row);
+  // });
+  var html = '';
+  table1.forEach(function (tr) {
+    html += '<tr>';
+    tr.forEach(function (td) {
+      html += '<td>' + td + '</td>';
     });
-    table.appendChild(row);
+    html += '</tr>';
   });
+  table.innerHTML = html;
+  table.querySelector('tr').children[0].dataset.op = 'multiply';
+  table.querySelector('tr').children[1].dataset.op = 'share';
+  table.querySelector('tr').children[2].dataset.op = 'subtract';
+  table.querySelector('tr').children[3].dataset.op = 'add';
   return table;
 }
 
 var randomNum = function () {
-  return Math.floor(Math.random() * 10)
+  return Math.floor(Math.random() * 10 )
 };
 
 
 // COUNT ON HOVER
 function count() {
-  var table = document.getElementById('table');
-  table.addEventListener('mouseover', function (target) {
-    var t_row = target.path[1].rowIndex;
-    // var t_cell = target.target.cellIndex; use in feature
-    var cell = document.getElementsByTagName("td");
-    var cell_new = [];
-    var multiply = function () {
-      for (var i = 0; i < 36; i++) {
-        (i > 3 && i !== 16 && i !== 17 && i !== 18 && i !== 19 && i < 32) ?
-          cell_new[i] = cell[i].innerText * cell[i].innerText : cell_new[i] = cell[i].innerText
-      }
-      return cell_new
-    };
-    var share = function () {
-      for (var i = 0; i < 36; i++) {
-        (i > 3 && i !== 16 && i !== 17 && i !== 18 && i !== 19 && i < 32) ?
-          (cell_new[i] = cell[i].innerText / cell[i].innerText) : cell_new[i] = cell[i].innerText
-      }
-      return cell_new
-    };
-    var subtract = function () {
-      for (var i = 0; i < 36; i++) {
-        (i > 3 && i !== 16 && i !== 17 && i !== 18 && i !== 19 && i < 32) ?
-          (cell_new[i] = cell[i].innerText - cell[i].innerText) : cell_new[i] = cell[i].innerText
-      }
-      return cell_new
-    };
-    var add = function () {
-      for (var i = 0; i < 36; i++) {
-        (i > 3 && i !== 16 && i !== 17 && i !== 18 && i !== 19 && i < 32) ?
-          (cell_new[i] = parseInt(cell[i].innerText) + parseInt(cell[i].innerText)) : cell_new[i] = cell[i].innerText
-      }
-      return cell_new
-    };
-    var one =
-      // function () {
-      multiply().map(function (item) {
-        return item;
-      });
-    // };
-    if (document.querySelectorAll('table').length >2) document.body.removeChild(document.querySelectorAll('table')[1]);
-    if (t_row === 0) {
-      switch (target.target.cellIndex) {
 
-        case 0:
-          document.body.appendChild(buildTable(4, 9, multiply()));
-          // document.body.appendChild(buildTable(4, 9, one(multiply())));
-          break;
-        case 1:
-          document.body.appendChild(buildTable(4, 9, share));
-          break;
-        case 2:
-          document.body.appendChild(buildTable(4, 9, subtract));
-          break;
-        case 3:
-          document.body.appendChild(buildTable(4, 9, add));
-          break;
-      }
-      return cell_new;
-    }
+  table.ops = {
+    multiply: opMultiply,
+    share: opShare,
+    subtract: opSubstract,
+    add: opAdd
+  };
+  var firstRow = table.querySelectorAll('tr:first-child td');
+  firstRow.forEach(function (td) {
+    td.addEventListener('mouseover', function () {
+      var tdHover = this;
+      var cells = table.querySelectorAll('td');
+      var colCount = table.querySelector('tr').children.length;
+      var middle = Math.ceil(table.querySelectorAll('tr').length / 2);
+      var currentIndex = indexElement(this);
+      var middleIndex = (middle - 1) * colCount + currentIndex;
+      var lastIndex = cells.length - colCount + currentIndex;
+
+      cells.forEach(function (td, i) {
+        td.dataset.value = td.innerText;
+        if (i !== currentIndex && i !== middleIndex && i !== lastIndex) {
+          td.innerText = table.ops[tdHover.dataset.op](+td.innerText);
+        }
+      });
+    });
+    td.addEventListener('mouseleave', function () {
+      table.querySelectorAll('td').forEach(function (td) {
+        td.innerText = td.dataset.value;
+      })
+
+    });
   });
+
+
+  function opMultiply(n) {
+    return n * n;
+  }
+
+  function opShare(n) {
+    return n ? n / n : 'inf';
+  }
+
+  function opSubstract(n) {
+    return n - n;
+  }
+
+  function opAdd(n) {
+    return n + n;
+  }
+
+  function indexElement(elem) {
+    var n = 0;
+    while (elem = elem.previousElementSibling) n++;
+    return n;
+  }
 }
 
-
-// ROTATE TABLE
-// function tableSwap() {
-//   var t = document.getElementById('table'),
-//     r = t.getElementsByTagName('tr'),
-//     cols = r.length, rows = r[0].getElementsByTagName('td').length,
-//     cell, next, tem, i = 0, tbod = document.createElement('table');
-//   while (i < rows) {
-//     cell = 0;
-//     tem = document.createElement('tr');
-//     while (cell < cols) {
-//       next = r[cell++].getElementsByTagName('td')[0];
-//       tem.appendChild(next);
-//     }
-//     tbod.appendChild(tem);
-//     ++i;
-//   }
-//   tbod.setAttribute('id', 'table');
-//   t.parentNode.replaceChild(tbod, t);
-// }
-
+function removeValue() {
+  table.addEventListener('click', function (e) {
+    if (e.target.tagName !== 'TD') return false;
+    if (+e.target.innerText >= 25) e.target.innerText = 0;
+  });
+}

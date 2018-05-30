@@ -66,6 +66,7 @@ table {
   margin: 50px auto;
 }
 table td {
+	width:70px;
   padding: 8px;
   text-align: center;
 }
