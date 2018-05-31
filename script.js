@@ -192,48 +192,37 @@ function inputs() {
   for (var j = 1; j < 4; j++) {
     buttons[j] = document.createElement("button");
     buttons[j].id = 'button_' + j;
-    var span = document.createElement("span");
-    document.body.appendChild(span);
-
-    span.appendChild(buttons[j]);
+    var span1 = document.createElement("span");
+    document.body.appendChild(span1);
+    span1.appendChild(buttons[j]);
   }
   buttons[1].innerHTML = 'Arr to Key';
   buttons[2].innerHTML = 'Sort keys Z>A';
   buttons[3].innerHTML = 'Copy to clipboard';
 
   document.getElementById('submit').addEventListener('click', function () {
+    document.querySelector('span').innerHTML = '';
     inputArr = [];
     var newObj;
-    var inputFirst = document.getElementById('input_0').value;
-    var inputSecond = document.getElementById('input_1').value;
+    var inputFirst = parseInt(document.getElementById('input_0').value);
+    var inputSecond = parseInt(document.getElementById('input_1').value);
+    if (isNaN(inputFirst) || isNaN(inputSecond)) {
+      alert('wrong numbers');
+      return false
+    }
     if (inputFirst === inputSecond) {
       document.querySelector('span').innerHTML = 'Content identical, it\'s won\'t work!';
-      min = '';
-      max = '';
+      return false;
     }
     if (inputFirst > inputSecond) {
       min = inputSecond;
       max = inputFirst;
-      document.querySelector('span').innerHTML = '';
     }
-    if (inputFirst < inputSecond) {
+    else {
       min = inputFirst;
       max = inputSecond;
-      document.querySelector('span').innerHTML = '';
     }
-
-    function getArr(min, max) {
-      inputArr = [];
-      for (var i = 0; i < 5; i++) {
-        // console.log(min, max);
-        var a = Math.random();
-        // console.log(a);
-        inputArr[i] = (Math.floor(a * (max - min + 1) + min));
-        // console.log(typeof inputArr[i]);
-      }
-      document.querySelector('p').innerHTML = inputArr;
-      return inputArr
-    }
+    // console.log(min, max);
 
     getArr(min, max);
 
@@ -245,12 +234,15 @@ function inputs() {
           arrObj[String.fromCharCode(65 + i)] = arr[i];
         return arrObj;
       }
-
       newObj = toObject(inputArr);
       //HIDDEN INPUT FOR CLIPBOARD
+      var elem = document.getElementById("hiddenNewObj");
+      var elem1 = document.getElementById("object");
+      if (elem) elem.parentElement.removeChild(elem);
+      if (elem1) elem1.parentElement.removeChild(elem1);
       var input = document.createElement("input");
       input.value = JSON.stringify(newObj);
-      input.id = 'newObj';
+      input.id = 'hiddenNewObj';
       input.type = 'hidden';
       document.body.appendChild(input);
       // DISPLAY OBJ
@@ -261,23 +253,59 @@ function inputs() {
       return newObj
     });
     document.getElementById('button_2').addEventListener('click', function () {
-      //SORT
-      console.log(typeof inputArr[4]);
-      var sA = inputArr.sort();
+      var list = document.getElementsByClassName("newElm");
+      for (var j = list.length - 1; 0 <= j; j--)
+        if (list[j] && list[j].parentElement)
+          list[j].parentElement.removeChild(list[j]);
+      for (var i = 0; i < 2; i++) {
+        var p = [];
+        p[i] = document.createElement("p");
+        p[i].setAttribute('class', 'newElm');
+        document.body.appendChild(p[i]);
+
+      }
+
+
+      var sA = inputArr.sort(function (a, b) {
+        return a - b;
+      });
       var sortedArr = sA.reverse();
-      // var sortedObj ;
-      // console.log(sortedArr);
-      // console.log(sortedObj);
+      var newElm = document.querySelectorAll('.newElm');
+      console.log(newElm);
 
-
+      newElm[0].innerHTML = "reversed arr=" + sortedArr;
+      newElm[1].innerHTML = "reversed obj=" + JSON.stringify(reverseObject(newObj));
     });
     document.getElementById('button_3').addEventListener('click', function (event) {
-
-      var text = document.getElementById("newObj");
+      var text = document.getElementById("hiddenNewObj");
       console.log(text);
       text.select();
       document.execCommand('copy');
+      document.body.removeChild(text);
+    // OBJKEYS!!
     });
+
+    function getArr(min, max) {
+      inputArr = [];
+      for (var i = 0; i < 5; i++) {
+        inputArr[i] = (Math.floor(Math.random() * (max - min + 1) + min));
+      }
+      document.querySelector('p').innerHTML = inputArr;
+      return inputArr
+    }
+
+    function reverseObject(object) {
+      var newObject = {};
+      var keys = [];
+      for (var key in object) {
+        keys.push(key);
+      }
+      for (var i = keys.length - 1; i >= 0; i--) {
+        var value = object[keys[i]];
+        newObject[keys[i]] = value;
+      }
+      return newObject;
+    }
   });
 }
 
@@ -292,4 +320,3 @@ function logout() {
     }
   })
 }
-
