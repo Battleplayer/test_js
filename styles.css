@@ -21,7 +21,6 @@ h1 {
   background-color: #fefefe;
   margin: auto;
   padding: 20px;
-  border: 1px solid #888;
   text-align: center;
 }
 #log {
@@ -48,7 +47,7 @@ h1 {
   margin: 0 auto;
   white-space: nowrap;
   overflow: hidden;
-  -webkit-animation: anime 1500ms steps(17, end);
+  -webkit-animation: anime 1500ms steps(9, end);
 }
 @-webkit-keyframes anime {
   from {
@@ -56,7 +55,7 @@ h1 {
   }
 }
 #preloader #load.remove {
-  -webkit-animation: anime1 1500ms steps(17, start);
+  -webkit-animation: anime1 1500ms steps(9, start);
 }
 @-webkit-keyframes anime1 {
   to {
